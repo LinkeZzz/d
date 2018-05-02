@@ -32,37 +32,3 @@ for i in range(2500):
         print("step %d, training accuracy %g %f"%(i, train_accuracy,time.time()-start_time))
         start_time = time.time()
     train_step.run(feed_dict={x: batch[0], y: batch[1],keep_prob:.5})
-
-def dream(layer = -1,ITERATIONS = 50):
-  img_noise = np.random.uniform(size=(28,28))
-  #img_noise = np.ones((28,28)) * .5
-  total_image = None
-
-  for channel in range(activations[layer].get_shape().as_list()[-1]):
-    try:
-      t_obj = activations[layer][:,:,:,channel]
-    except:
-      t_obj = activations[layer][:,channel]
-    t_score = tf.reduce_mean(t_obj)
-    t_grad = tf.gradients(t_score,x)[0]
-    img = img_noise.copy()
-    img = img.reshape(1,784)
-
-    for i in range(ITERATIONS):
-      g,score = sess.run([t_grad,t_score],{x:img})
-      g /= g.std()+1e-8
-      step = 1
-      img += g*step
-    print(channel,score)
-
-    img = (img-img.mean())/max(img.std(), 1e-4)*.1 + 0.5
-    if total_image is None:
-      total_image = img.reshape((28,28))
-    else:
-      total_image = np.hstack((total_image,img.reshape((28,28))))
-  #cv2.imwrite('Total_%s.png'%layer,total_image * 255)
-
-def dreamAll(ITERATIONS = 50):
-  for i in range(len(activations)):
-    print('Layer %d'%i)
-    dream(i,ITERATIONS)
