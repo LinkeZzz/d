@@ -2,6 +2,24 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow.python import debug as tf_debug
 
+
+def dropout_with_drop_value(prev_matrix, alpha):
+    elements = tf.size(prev_matrix)
+    dist = tf.Binomial(total_count=elements, probs=alpha)
+    mask = tf.fill(tf.shape(prev_matrix), 1.0)
+    one_mask = tf.fill(tf.shape(prev_matrix), 1.0)
+    #TODO: make values according prob
+    dist.prob(mask)
+    result = mask + tf.multiply((one_mask - mask), prev_matrix)
+    return result
+
+def get_actual_matrix(prev_matrix, inter_matrix, alpha):
+    a = dropout_with_drop_value(prev_matrix, alpha)
+    #TODO: should be the same shape
+    act_matrix = tf.minimum(a, inter_matrix)
+    return act_matrix
+
+
 x = tf.placeholder(tf.float32, (None, 28*28))
 y = tf.placeholder(tf.float32, (None, 10))
 keep_prob = tf.placeholder(tf.float32)
@@ -50,7 +68,7 @@ def expand(inputs, expandTo):
 
 
 with tf.name_scope('fire1' + str(N)):
-    print(activations[-1])
+    activations[-1] = tf.multiply(activations[-1], activation_maps[-1])
     fireblock(activations[-1], filters[0], squeezes[0])
     print(activations[-1])
 
@@ -120,6 +138,5 @@ with tf.name_scope('logist'):
     train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
     correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
     tf.summary.scalar('accuracy', accuracy)
 
