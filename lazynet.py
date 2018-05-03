@@ -45,8 +45,12 @@ def expand(inputs, expandTo):
         h = tf.concat([h1x1, h3x3], 3)
     return h
 
+
 squeezes = [2 * N, 2 * N, int(1.5 * N), int(1.5 * N), 3 * N, 3 * N, 4 * N, 4 * N]
 filters = [8 * N, 8 * N, 6 * N, 6 * N, 12 * N, 12 * N, 16 * N, 16 * N]
+
+squeezes = [2 * N, 2 * N, int(1.5 * N), int(1.5 * N), 3 * N, 3 * N, 4 * N, 4 * N]
+filters = [N, int(1.5*N), 2 * N, 3 * N, 4 * N]
 
 with tf.name_scope('conv1'):
     w = tf.Variable(tf.truncated_normal([3, 3, 1, 64]))
