@@ -1,7 +1,6 @@
 from lazynet import *
 import time
 import numpy as np
-#import cv2
 import sys
 sys.path.append("")
 from tensorflow.examples.tutorials.mnist import input_data
@@ -32,3 +31,7 @@ for i in range(2500):
         print("step %d, training accuracy %g %f"%(i, train_accuracy,time.time()-start_time))
         start_time = time.time()
     train_step.run(feed_dict={x: batch[0], y: batch[1],keep_prob:.5})
+
+saver = tf.train.Saver()
+save_path = saver.save(sess, "/root/PycharmProjects/d/models/model.ckpt")
+print("Model saved in path: %s" % save_path)
