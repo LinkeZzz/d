@@ -1,3 +1,5 @@
+
+
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow.python import debug as tf_debug
@@ -41,6 +43,11 @@ def change_shape(matrix, size):
     for i in range(0, size):
         tf.concat([result, matrix],3)
     return result
+
+def create_tensor(t,s):
+    arr = [[t for x in range(s)] for y in range(s)]
+    out = tf.convert_to_tensor(arr)
+    return out
 
 x = tf.placeholder(tf.float32, (None, 28*28))
 y = tf.placeholder(tf.float32, (None, 10))
@@ -86,14 +93,19 @@ def expand(inputs, expandTo):
         h = tf.concat([h1x1, h3x3], 3)
     return h
 
-with tf.name_scope('fire1' + str(N)):
-    activations.append(tf.multiply(activations[-1], activation_maps[-1]))# AM*calculations
-    fireblock(activations[-1], filters[0], squeezes[0])
-    h = tf.reshape(tf.reduce_mean(tf.nn.sigmoid(activations[-1]), 3), [-1, 28, 28, 1]) #Intermediate map 28x28x1
-    activation_maps.append(tf.multiply(h, activation_maps[-1]))# IM* PM
 
-    print("a: ",activations[-1])
-    print ("am: ",activation_maps[-1])
+test = True
+t = 0.5
+
+with tf.name_scope('fire1' + str(N)):
+    activations.append(tf.multiply(activations[-1], activation_maps[-1]))# AM train-time
+    fireblock(activations[-1], filters[0], squeezes[0])
+    h = tf.reshape(tf.reduce_mean(tf.nn.sigmoid(activations[-1]), 3), [-1, 28, 28, 1]) #IM 28x28x1
+    if test:
+        IM = tf.to_float(h > t)
+        activation_maps.append(tf.minimum(IM, activation_maps[-1]))# min(IM,PM)
+    else:
+        activation_maps.append(tf.multiply(h, activation_maps[-1]))# IM* PM
 
 with tf.name_scope('maxpool1'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
@@ -101,18 +113,16 @@ with tf.name_scope('maxpool1'):
     h = tf.nn.max_pool(activation_maps[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     activation_maps.append(h)
 
-    print("a: ",activations[-1])
-    print ("am: ",activation_maps[-1])
-
 with tf.name_scope('fire2' + str(1.5*N)):
     activation_maps.append(change_shape(activation_maps[-1], 2*N))
-    activations.append(tf.multiply(activations[-1], activation_maps[-1]))# AM*calculations
+    activations.append(tf.multiply(activations[-1], activation_maps[-1]))
     fireblock(activations[-1], filters[1], squeezes[1])
-    h = tf.reshape(tf.reduce_mean(tf.nn.sigmoid(activations[-1]),3), [-1, 14, 14, 1]) #Intermediate map 28x28x1
-    activation_maps.append(tf.multiply(h, activation_maps[-1]))# IM* PM
-
-    print("a: ",activations[-1])
-    print ("am: ",activation_maps[-1])
+    h = tf.reshape(tf.reduce_mean(tf.nn.sigmoid(activations[-1]),3), [-1, 14, 14, 1])
+    if test:
+        IM = tf.to_float(h > t)
+        activation_maps.append(tf.minimum(IM, activation_maps[-1]))
+    else:
+        activation_maps.append(tf.multiply(h, activation_maps[-1]))
 
 with tf.name_scope('maxpool2'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
@@ -120,17 +130,16 @@ with tf.name_scope('maxpool2'):
     h = tf.nn.max_pool(activation_maps[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     activation_maps.append(h)
 
-    print("a: ",activations[-1])
-    print ("am: ",activation_maps[-1])
-
 with tf.name_scope('fire3' + str(2 * N)):
     activation_maps.append(change_shape(activation_maps[-1],3*N))
     activations.append(tf.multiply(activations[-1], activation_maps[-1]))
     fireblock(activations[-1], filters[2], squeezes[2])
     h = tf.reshape(tf.reduce_mean(tf.nn.sigmoid(activations[-1]), 3), [-1, 7, 7, 1])
-    activation_maps.append(tf.multiply(h, activation_maps[-1]))
-    print("a: ",activations[-1])
-    print ("am: ",activation_maps[-1])
+    if test:
+        IM = tf.to_float(h > t)
+        activation_maps.append(tf.minimum(IM, activation_maps[-1]))
+    else:
+        activation_maps.append(tf.multiply(h, activation_maps[-1]))
 
 with tf.name_scope('maxpool3'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
@@ -138,17 +147,16 @@ with tf.name_scope('maxpool3'):
     h = tf.nn.max_pool(activation_maps[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     activation_maps.append(h)
 
-    print("a: ",activations[-1])
-    print ("am: ",activation_maps[-1])
-
 with tf.name_scope('fire4' + str(3* N)):
     activation_maps.append(change_shape(activation_maps[-1],4*N))
     activations.append(tf.multiply(activations[-1], activation_maps[-1]))
     fireblock(activations[-1], filters[3], squeezes[3])
     h = tf.reshape(tf.reduce_mean(tf.nn.sigmoid(activations[-1]), 3), [-1, 4, 4, 1])
-    activation_maps.append(tf.multiply(h, activation_maps[-1]))
-    print("a: ",activations[-1])
-    print ("am: ",activation_maps[-1])
+    if test:
+        IM = tf.to_float(h > t)
+        activation_maps.append(tf.minimum(IM, activation_maps[-1]))
+    else:
+        activation_maps.append(tf.multiply(h, activation_maps[-1]))
 
 with tf.name_scope('maxpool4'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
@@ -156,17 +164,16 @@ with tf.name_scope('maxpool4'):
     h = tf.nn.max_pool(activation_maps[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     activation_maps.append(h)
 
-    print("a: ",activations[-1])
-    print ("am: ",activation_maps[-1])
-
 with tf.name_scope('fire5' + str(4* N)):
     activation_maps.append(change_shape(activation_maps[-1],6*N))
     activations.append(tf.multiply(activations[-1], activation_maps[-1]))
     fireblock(activations[-1], filters[4], squeezes[4])
     h = tf.reshape(tf.reduce_mean(tf.nn.sigmoid(activations[-1]), 3), [-1, 2, 2, 1])
-    activation_maps.append(tf.multiply(h, activation_maps[-1]))
-    print("a: ",activations[-1])
-    print ("am: ",activation_maps[-1])
+    if test:
+        IM = tf.to_float(h > t)
+        activation_maps.append(tf.minimum(IM, activation_maps[-1]))
+    else:
+        activation_maps.append(tf.multiply(h, activation_maps[-1]))
 
 with tf.name_scope('maxpool5'):
     print(activations[-1])
@@ -175,18 +182,11 @@ with tf.name_scope('maxpool5'):
     h = tf.nn.max_pool(activation_maps[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     activation_maps.append(h)
 
-    print("a: ",activations[-1])
-    print ("am: ",activation_maps[-1])
-
 with tf.name_scope('dense'):
-    print(activations[-1])
     # second parameter 64-batch size
     a_flat = tf.reshape(activations[-1], [64, 2*4*N])
-    print(a_flat)
     dense = tf.layers.dense(inputs=a_flat, units=10, activation=tf.nn.sigmoid)
-    print(dense)
     activations.append(dense)
-    print("final_OUT:", activations[-1])
 
 with tf.name_scope('logist'):
     y_conv = tf.nn.softmax(activations[-1])
