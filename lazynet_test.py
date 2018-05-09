@@ -15,8 +15,8 @@ mnist = input_data.read_data_sets('D:\TensorFlow\MNIST\data', one_hot=True)
 
 start_time = time.time()
 print('Started')
-for i in range(2500):
-    batch = mnist.train.next_batch(64)
+for i in range(2400):
+    batch = mnist.train.next_batch(100)
     if i%100 == 0:
         run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
         run_metadata = tf.RunMetadata()
@@ -31,7 +31,10 @@ for i in range(2500):
         print("step %d, training accuracy %g %f"%(i, train_accuracy,time.time()-start_time))
         start_time = time.time()
     train_step.run(feed_dict={x: batch[0], y: batch[1],keep_prob:.5})
-
+sum=0
+for i in range(0,100):
+    sum+=accuracy.eval(feed_dict={x: mnist.test.images[100*i:100*i+100], y: mnist.test.labels[100*i:100*i+100]})
+print("test acuuracy", sum/100)
 saver = tf.train.Saver()
 save_path = saver.save(sess, "/root/PycharmProjects/d/models/model.ckpt")
 print("Model saved in path: %s" % save_path)

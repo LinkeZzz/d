@@ -95,7 +95,7 @@ def expand(inputs, expandTo):
 
 
 test = True
-t = 0.5
+t = 0.2
 
 with tf.name_scope('fire1' + str(N)):
     activations.append(tf.multiply(activations[-1], activation_maps[-1]))# AM train-time
@@ -184,7 +184,7 @@ with tf.name_scope('maxpool5'):
 
 with tf.name_scope('dense'):
     # second parameter 64-batch size
-    a_flat = tf.reshape(activations[-1], [64, 2*4*N])
+    a_flat = tf.reshape(activations[-1], [100, 2*4*N])
     dense = tf.layers.dense(inputs=a_flat, units=10, activation=tf.nn.sigmoid)
     activations.append(dense)
 
