@@ -50,7 +50,8 @@ def create_tensor(t,s):
     return out
 
 x = tf.placeholder(tf.float32, (None, 28*28))
-y = tf.placeholder(tf.float32, (None, 10))
+#y = tf.placeholder(tf.float32, (None, 10))
+y = tf.placeholder(tf.float32, (100, 2))
 keep_prob = tf.placeholder(tf.float32)
 
 activations = []
@@ -95,17 +96,20 @@ def expand(inputs, expandTo):
 
 
 test = True
-t = 0.2
-
-with tf.name_scope('fire1' + str(N)):
+t = 0.0
+stop = False
+with tf.name_scope('1fire' + str(N)):
     activations.append(tf.multiply(activations[-1], activation_maps[-1]))# AM train-time
     fireblock(activations[-1], filters[0], squeezes[0])
-    h = tf.reshape(tf.reduce_mean(tf.nn.sigmoid(activations[-1]), 3), [-1, 28, 28, 1]) #IM 28x28x1
+    h = tf.nn.sigmoid(activations[-1]) #IM 28x28x16
+    h = tf.layers.conv2d(h, filters=1, kernel_size=[1, 1], padding="same")#28x28x1
     if test:
-        IM = tf.to_float(h > t)
+        IM = h#tf.to_float(h > t)
         activation_maps.append(tf.minimum(IM, activation_maps[-1]))# min(IM,PM)
     else:
         activation_maps.append(tf.multiply(h, activation_maps[-1]))# IM* PM
+    out = tf.nn.max_pool(activation_maps[-1], [1, 28, 28, 1],[1, 28, 28, 1], 'SAME')
+    #if (out < 0.2):
 
 with tf.name_scope('maxpool1'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
@@ -113,16 +117,18 @@ with tf.name_scope('maxpool1'):
     h = tf.nn.max_pool(activation_maps[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     activation_maps.append(h)
 
-with tf.name_scope('fire2' + str(1.5*N)):
+with tf.name_scope('2fire' + str(1.5*N)):
     activation_maps.append(change_shape(activation_maps[-1], 2*N))
     activations.append(tf.multiply(activations[-1], activation_maps[-1]))
     fireblock(activations[-1], filters[1], squeezes[1])
-    h = tf.reshape(tf.reduce_mean(tf.nn.sigmoid(activations[-1]),3), [-1, 14, 14, 1])
+    h = tf.nn.sigmoid(activations[-1])
+    h = tf.layers.conv2d(h, filters=1, kernel_size=[1, 1], padding="same")
     if test:
-        IM = tf.to_float(h > t)
+        IM = h#tf.to_float(h > t)
         activation_maps.append(tf.minimum(IM, activation_maps[-1]))
     else:
         activation_maps.append(tf.multiply(h, activation_maps[-1]))
+    out = tf.nn.max_pool(activation_maps[-1], [1, 14, 14, 1], [1, 14, 14, 1], 'SAME')
 
 with tf.name_scope('maxpool2'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
@@ -130,16 +136,18 @@ with tf.name_scope('maxpool2'):
     h = tf.nn.max_pool(activation_maps[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     activation_maps.append(h)
 
-with tf.name_scope('fire3' + str(2 * N)):
+with tf.name_scope('3fire' + str(2 * N)):
     activation_maps.append(change_shape(activation_maps[-1],3*N))
     activations.append(tf.multiply(activations[-1], activation_maps[-1]))
     fireblock(activations[-1], filters[2], squeezes[2])
-    h = tf.reshape(tf.reduce_mean(tf.nn.sigmoid(activations[-1]), 3), [-1, 7, 7, 1])
+    h = tf.nn.sigmoid(activations[-1])
+    h = tf.layers.conv2d(h, filters=1, kernel_size=[1, 1], padding="same")
     if test:
-        IM = tf.to_float(h > t)
+        IM = h#tf.to_float(h > t)
         activation_maps.append(tf.minimum(IM, activation_maps[-1]))
     else:
         activation_maps.append(tf.multiply(h, activation_maps[-1]))
+    out = tf.nn.max_pool(activation_maps[-1], [1, 7, 7, 1], [1, 7, 7, 1], 'SAME')
 
 with tf.name_scope('maxpool3'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
@@ -147,16 +155,18 @@ with tf.name_scope('maxpool3'):
     h = tf.nn.max_pool(activation_maps[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     activation_maps.append(h)
 
-with tf.name_scope('fire4' + str(3* N)):
+with tf.name_scope('4fire' + str(3* N)):
     activation_maps.append(change_shape(activation_maps[-1],4*N))
     activations.append(tf.multiply(activations[-1], activation_maps[-1]))
     fireblock(activations[-1], filters[3], squeezes[3])
-    h = tf.reshape(tf.reduce_mean(tf.nn.sigmoid(activations[-1]), 3), [-1, 4, 4, 1])
+    h = tf.nn.sigmoid(activations[-1])
+    h = tf.layers.conv2d(h, filters=1, kernel_size=[1, 1], padding="same")
     if test:
-        IM = tf.to_float(h > t)
+        IM = h#tf.to_float(h > t)
         activation_maps.append(tf.minimum(IM, activation_maps[-1]))
     else:
         activation_maps.append(tf.multiply(h, activation_maps[-1]))
+    out = tf.nn.max_pool(activation_maps[-1], [1, 4, 4, 1], [1, 4, 4, 1], 'SAME')
 
 with tf.name_scope('maxpool4'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
@@ -164,16 +174,18 @@ with tf.name_scope('maxpool4'):
     h = tf.nn.max_pool(activation_maps[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
     activation_maps.append(h)
 
-with tf.name_scope('fire5' + str(4* N)):
+with tf.name_scope('5fire' + str(4* N)):
     activation_maps.append(change_shape(activation_maps[-1],6*N))
     activations.append(tf.multiply(activations[-1], activation_maps[-1]))
     fireblock(activations[-1], filters[4], squeezes[4])
-    h = tf.reshape(tf.reduce_mean(tf.nn.sigmoid(activations[-1]), 3), [-1, 2, 2, 1])
+    h = tf.nn.sigmoid(activations[-1])
+    h = tf.layers.conv2d(h, filters=1, kernel_size=[1, 1], padding="same")
     if test:
-        IM = tf.to_float(h > t)
+        IM = h#tf.to_float(h > t)
         activation_maps.append(tf.minimum(IM, activation_maps[-1]))
     else:
         activation_maps.append(tf.multiply(h, activation_maps[-1]))
+    out = tf.nn.max_pool(activation_maps[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
 
 with tf.name_scope('maxpool5'):
     print(activations[-1])
@@ -185,15 +197,30 @@ with tf.name_scope('maxpool5'):
 with tf.name_scope('dense'):
     # second parameter 64-batch size
     a_flat = tf.reshape(activations[-1], [100, 2*4*N])
-    dense = tf.layers.dense(inputs=a_flat, units=10, activation=tf.nn.sigmoid)
+    dense = tf.layers.dense(inputs=a_flat, units=2, activation=tf.nn.sigmoid)
     activations.append(dense)
 
 with tf.name_scope('logist'):
     y_conv = tf.nn.softmax(activations[-1])
-    print("y_conv: ", tf.argmax(y_conv, 1))
-    print("y_answers", y)
+    y_pred_cls = tf.argmax(y_conv, dimension=1)
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=activations[-1], labels=y)
-    train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
-    correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y, 1))
+    cost = tf.reduce_mean(cross_entropy)
+    train_step = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(cost)
+    correct_prediction = tf.equal(y_pred_cls, tf.argmax(y, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     tf.summary.scalar('accuracy', accuracy)
+
+
+
+
+
+
+
+    '''y_conv = tf.nn.sigmoid(activations[-1])
+    loss = -(y * tf.log(y_conv + 1e-12) + (1 - y) * tf.log(1 - y_conv + 1e-12))
+    cross_entropy = tf.reduce_mean(tf.reduce_sum(loss, reduction_indices=[1]))
+    train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+    predict_is_number = tf.greater(y_conv, 0.5)
+    correct_prediction = tf.equal( tf.to_float(predict_is_number), y)
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    tf.summary.scalar('accuracy', accuracy)'''
