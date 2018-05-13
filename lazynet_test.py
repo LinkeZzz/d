@@ -14,7 +14,7 @@ sess.run(tf.global_variables_initializer())
 mnist = input_data.read_data_sets('D:\TensorFlow\MNIST\data', one_hot=True)
 
 start_time = time.time()
-batch_size=100
+batch_size = 100
 print('Started')
 for i in range(400):
     batch = mnist.train.next_batch(batch_size)
@@ -41,7 +41,15 @@ for i in range(400):
     train_step.run(feed_dict={x: batch[0], y: batch_labels, keep_prob:.5})
     #train_step.run(feed_dict={x: batch[0], y: batch[1], keep_prob: .5})
 
+opts = tf.profiler.ProfileOptionBuilder.float_operation()
+flops = tf.profiler.profile(tf.get_default_graph(), run_meta=run_metadata, cmd='op', options=opts)
+if flops is not None:
+    print('Flops should be ~', 2 * 25 * 16 * 9)
+    print('25 x 25 x 9 would be', 2 * 25 * 25 * 9)  # ignores internal dim, repeats first
+    print('TF stats gives', flops.total_float_ops)
 sum=0
+#test10'000
+
 for i in range(0, 100):
     y_two_class = mnist.test.labels[100*i:100*i+100]
     test_labels = [[0, 1] for ii in range(100)]

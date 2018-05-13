@@ -1,5 +1,3 @@
-
-
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow.python import debug as tf_debug
@@ -49,8 +47,11 @@ def create_tensor(t,s):
     out = tf.convert_to_tensor(arr)
     return out
 
+'''g = tf.Graph()
+
+with g.as_default():'''
 x = tf.placeholder(tf.float32, (None, 28*28))
-#y = tf.placeholder(tf.float32, (None, 10))
+    #y = tf.placeholder(tf.float32, (None, 10))
 y = tf.placeholder(tf.float32, (100, 2))
 keep_prob = tf.placeholder(tf.float32)
 
@@ -72,27 +73,27 @@ squeezes = [int(N/4), int(0.375*N), int(0.5*N), int(0.75*N), N]
 print ("init:", activations[-1])
 
 def fireblock(inputs,  expandTo, squeezeTo=4):
-    h = squeeze(inputs, squeezeTo)
-    h = expand(h, expandTo)
-    h = tf.clip_by_norm(h, NORM)
-    activations.append(h)
+        h = squeeze(inputs, squeezeTo)
+        h = expand(h, expandTo)
+        h = tf.clip_by_norm(h, NORM)
+        activations.append(h)
 
 def squeeze(inputs, squeezeTo):
-    with tf.name_scope('squeeze'):
-        inputSize = inputs.get_shape().as_list()[3]
-        w = tf.Variable(tf.truncated_normal([1, 1, inputSize, squeezeTo]))
-        h = tf.nn.leaky_relu(tf.nn.conv2d(inputs, w, [1, 1, 1, 1], 'SAME'), alpha=0.05)
-    return h
+        with tf.name_scope('squeeze'):
+            inputSize = inputs.get_shape().as_list()[3]
+            w = tf.Variable(tf.truncated_normal([1, 1, inputSize, squeezeTo]))
+            h = tf.nn.leaky_relu(tf.nn.conv2d(inputs, w, [1, 1, 1, 1], 'SAME'), alpha=0.05)
+        return h
 
 def expand(inputs, expandTo):
-    with tf.name_scope('expand'):
-        squeezeTo = inputs.get_shape().as_list()[3]
-        w = tf.Variable(tf.truncated_normal([1, 1, squeezeTo, expandTo]))
-        h1x1 = tf.nn.leaky_relu(tf.nn.conv2d(inputs, w, [1, 1, 1, 1], 'SAME'), alpha=0.05)
-        w = tf.Variable(tf.truncated_normal([3, 3, squeezeTo, expandTo]))
-        h3x3 = tf.nn.leaky_relu(tf.nn.conv2d(inputs, w, [1, 1, 1, 1], 'SAME'), alpha=0.05)
-        h = tf.concat([h1x1, h3x3], 3)
-    return h
+        with tf.name_scope('expand'):
+            squeezeTo = inputs.get_shape().as_list()[3]
+            w = tf.Variable(tf.truncated_normal([1, 1, squeezeTo, expandTo]))
+            h1x1 = tf.nn.leaky_relu(tf.nn.conv2d(inputs, w, [1, 1, 1, 1], 'SAME'), alpha=0.05)
+            w = tf.Variable(tf.truncated_normal([3, 3, squeezeTo, expandTo]))
+            h3x3 = tf.nn.leaky_relu(tf.nn.conv2d(inputs, w, [1, 1, 1, 1], 'SAME'), alpha=0.05)
+            h = tf.concat([h1x1, h3x3], 3)
+        return h
 
 
 test = True
@@ -109,7 +110,7 @@ with tf.name_scope('1fire' + str(N)):
     else:
         activation_maps.append(tf.multiply(h, activation_maps[-1]))# IM* PM
     out = tf.nn.max_pool(activation_maps[-1], [1, 28, 28, 1],[1, 28, 28, 1], 'SAME')
-    #if (out < 0.2):
+
 
 with tf.name_scope('maxpool1'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
@@ -129,6 +130,7 @@ with tf.name_scope('2fire' + str(1.5*N)):
     else:
         activation_maps.append(tf.multiply(h, activation_maps[-1]))
     out = tf.nn.max_pool(activation_maps[-1], [1, 14, 14, 1], [1, 14, 14, 1], 'SAME')
+        #if (out < 0.2):pass
 
 with tf.name_scope('maxpool2'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
@@ -148,6 +150,7 @@ with tf.name_scope('3fire' + str(2 * N)):
     else:
         activation_maps.append(tf.multiply(h, activation_maps[-1]))
     out = tf.nn.max_pool(activation_maps[-1], [1, 7, 7, 1], [1, 7, 7, 1], 'SAME')
+        #if (out < 0.2):pass
 
 with tf.name_scope('maxpool3'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
@@ -167,6 +170,7 @@ with tf.name_scope('4fire' + str(3* N)):
     else:
         activation_maps.append(tf.multiply(h, activation_maps[-1]))
     out = tf.nn.max_pool(activation_maps[-1], [1, 4, 4, 1], [1, 4, 4, 1], 'SAME')
+        #if (out < 0.2):pass
 
 with tf.name_scope('maxpool4'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
@@ -186,6 +190,7 @@ with tf.name_scope('5fire' + str(4* N)):
     else:
         activation_maps.append(tf.multiply(h, activation_maps[-1]))
     out = tf.nn.max_pool(activation_maps[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
+        #if (out < 0.2):pass
 
 with tf.name_scope('maxpool5'):
     print(activations[-1])
@@ -210,17 +215,11 @@ with tf.name_scope('logist'):
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     tf.summary.scalar('accuracy', accuracy)
 
-
-
-
-
-
-
     '''y_conv = tf.nn.sigmoid(activations[-1])
-    loss = -(y * tf.log(y_conv + 1e-12) + (1 - y) * tf.log(1 - y_conv + 1e-12))
-    cross_entropy = tf.reduce_mean(tf.reduce_sum(loss, reduction_indices=[1]))
-    train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
-    predict_is_number = tf.greater(y_conv, 0.5)
-    correct_prediction = tf.equal( tf.to_float(predict_is_number), y)
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    tf.summary.scalar('accuracy', accuracy)'''
+        loss = -(y * tf.log(y_conv + 1e-12) + (1 - y) * tf.log(1 - y_conv + 1e-12))
+        cross_entropy = tf.reduce_mean(tf.reduce_sum(loss, reduction_indices=[1]))
+        train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+        predict_is_number = tf.greater(y_conv, 0.5)
+        correct_prediction = tf.equal( tf.to_float(predict_is_number), y)
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        tf.summary.scalar('accuracy', accuracy)'''
