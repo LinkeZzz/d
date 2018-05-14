@@ -16,6 +16,7 @@ mnist = input_data.read_data_sets('D:\TensorFlow\MNIST\data', one_hot=True)
 start_time = time.time()
 batch_size = 100
 print('Started')
+
 for i in range(400):
     batch = mnist.train.next_batch(batch_size)
     if i%100 == 0:
@@ -44,12 +45,10 @@ for i in range(400):
 opts = tf.profiler.ProfileOptionBuilder.float_operation()
 flops = tf.profiler.profile(tf.get_default_graph(), run_meta=run_metadata, cmd='op', options=opts)
 if flops is not None:
-    print('Flops should be ~', 2 * 25 * 16 * 9)
-    print('25 x 25 x 9 would be', 2 * 25 * 25 * 9)  # ignores internal dim, repeats first
     print('TF stats gives', flops.total_float_ops)
+
 sum=0
 #test10'000
-
 for i in range(0, 100):
     y_two_class = mnist.test.labels[100*i:100*i+100]
     test_labels = [[0, 1] for ii in range(100)]
@@ -64,3 +63,4 @@ print("test acuuracy", sum/100)
 saver = tf.train.Saver()
 save_path = saver.save(sess, "/root/PycharmProjects/d/models/model.ckpt")
 print("Model saved in path: %s" % save_path)
+tf.train.write_graph(sess.graph_def,'models', 'tfdroid.pb', as_text=False)

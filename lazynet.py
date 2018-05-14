@@ -47,11 +47,9 @@ def create_tensor(t,s):
     out = tf.convert_to_tensor(arr)
     return out
 
-'''g = tf.Graph()
 
-with g.as_default():'''
 x = tf.placeholder(tf.float32, (None, 28*28))
-    #y = tf.placeholder(tf.float32, (None, 10))
+#y = tf.placeholder(tf.float32, (None, 10))
 y = tf.placeholder(tf.float32, (100, 2))
 keep_prob = tf.placeholder(tf.float32)
 
@@ -110,7 +108,6 @@ with tf.name_scope('1fire' + str(N)):
     else:
         activation_maps.append(tf.multiply(h, activation_maps[-1]))# IM* PM
     out = tf.nn.max_pool(activation_maps[-1], [1, 28, 28, 1],[1, 28, 28, 1], 'SAME')
-
 
 with tf.name_scope('maxpool1'):
     h = tf.nn.max_pool(activations[-1], [1, 2, 2, 1], [1, 2, 2, 1], 'SAME')
